@@ -1,10 +1,9 @@
 package pageqwq.memechat;
 
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
+import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceManager;
 
-import java.io.IOException;
 import java.util.LinkedHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,25 +48,21 @@ public final class MemechatEmojis {
         EmojiAtlas.clear();
         packNames.clear();
 
+        // 包显示名直接取材质包文件夹名（packId），不读 pack.mcmeta description
         resourceManager.listPacks().forEach(pack -> {
             String id = pack.packId();
-            String name = id;
-            try {
-                var meta = pack.getMetadataSection(PackMetadataSection.TYPE);
-                if (meta != null && !meta.description().getString().isBlank()) {
-                    name = meta.description().getString();
-                }
-            } catch (IOException ignored) {
-            }
-            packNames.put(id, name);
+            packNames.put(id, id.startsWith("file/") ? id.substring("file/".length()) : id);
         });
 
-        resourceManager.listResources(MemechatConstants.MEMES_PATH, IS_MEME)
-                .forEach((loc, resource) -> {
-                    if (loc.getNamespace().equals(MemechatConstants.NAMESPACE)) {
-                        register(loc, resource.sourcePackId());
-                    }
-                });
+        // 按包枚举：listResources 会因资源覆盖只返回高优先级包，被覆盖的包会从列表消失
+        resourceManager.listPacks().forEach(pack ->
+                pack.listResources(PackType.CLIENT_RESOURCES, MemechatConstants.NAMESPACE,
+                        MemechatConstants.MEMES_PATH,
+                        (loc, supplier) -> {
+                            if (IS_MEME.test(loc)) {
+                                register(loc, pack.packId());
+                            }
+                        }));
 
         LOGGER.info("[memechat] Discovered {} memes", registry.all().size());
     }

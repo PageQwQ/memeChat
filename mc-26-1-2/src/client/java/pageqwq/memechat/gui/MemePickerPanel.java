@@ -42,6 +42,8 @@ public class MemePickerPanel {
     private int panelX, panelY, panelWidth, panelHeight;
     private int gridX, gridY, gridWidth;
     private int scrollOffset;
+    private int tabPage;
+    private int tabsPerPage = 4;
 
     public MemePickerPanel(Consumer<String> onMemeSelected, Runnable onClosed) {
         this.onMemeSelected = onMemeSelected;
@@ -74,6 +76,26 @@ public class MemePickerPanel {
         }
         memes = registry.memesInGroup(selectedPack, selectedGroup);
         scrollOffset = 0;
+        tabPage = 0;
+    }
+
+    /** 按可用宽度计算当前页能放下的分组数（留 24px 给翻页按钮） */
+    private void computeTabsPerPage(Font font) {
+        int avail = gridWidth - 4 - 22;
+        int count = 0;
+        int w = 0;
+        for (String group : groups) {
+            String display = MemechatEmojis.getInstance().groupDisplayName(selectedPack, group);
+            int gw = font.width(display) + 10;
+            if (count > 0 && w + gw > avail) break;
+            w += gw;
+            count++;
+        }
+        tabsPerPage = Math.max(1, count);
+    }
+
+    private int tabPageCount() {
+        return Math.max(1, (groups.size() + tabsPerPage - 1) / tabsPerPage);
     }
 
     public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float deltaTicks) {
@@ -111,19 +133,32 @@ public class MemePickerPanel {
             y += GROUP_HEADER_HEIGHT;
         }
 
-        // memegroup tabs (click to switch)
+        // memegroup tabs (click to switch, paged when too many groups)
+        computeTabsPerPage(font);
+        int pageCount = tabPageCount();
+        if (tabPage >= pageCount) tabPage = pageCount - 1;
+        int from = tabPage * tabsPerPage;
+        int to = Math.min(groups.size(), from + tabsPerPage);
         int tabX = gridX + 2;
-        for (String group : groups) {
+        for (int i = from; i < to; i++) {
+            String group = groups.get(i);
+            String display = MemechatEmojis.getInstance().groupDisplayName(selectedPack, group);
             boolean selected = group.equals(selectedGroup);
-            boolean hovered = mouseX >= tabX && mouseX < tabX + font.width(group) + 8
+            boolean hovered = mouseX >= tabX && mouseX < tabX + font.width(display) + 8
                     && mouseY >= panelY + 1 && mouseY < panelY + GROUP_HEADER_HEIGHT - 1;
             if (selected) {
-                graphics.fill(tabX, panelY + 1, tabX + font.width(group) + 8, panelY + GROUP_HEADER_HEIGHT - 1, 0x6633aaff);
+                graphics.fill(tabX, panelY + 1, tabX + font.width(display) + 8, panelY + GROUP_HEADER_HEIGHT - 1, 0x6633aaff);
             } else if (hovered) {
-                graphics.fill(tabX, panelY + 1, tabX + font.width(group) + 8, panelY + GROUP_HEADER_HEIGHT - 1, 0x33ffffff);
+                graphics.fill(tabX, panelY + 1, tabX + font.width(display) + 8, panelY + GROUP_HEADER_HEIGHT - 1, 0x33ffffff);
             }
-            graphics.text(font, group, tabX + 4, panelY + 3, selected ? 0xffffcc00 : 0xffffffff, true);
-            tabX += font.width(group) + 10;
+            graphics.text(font, display, tabX + 4, panelY + 3, selected ? 0xffffcc00 : 0xffffffff, true);
+            tabX += font.width(display) + 10;
+        }
+        // page arrows
+        if (pageCount > 1) {
+            int btnX = gridX + gridWidth - 24;
+            graphics.text(font, "<", btnX, panelY + 3, tabPage > 0 ? 0xffffffff : 0x66ffffff, true);
+            graphics.text(font, ">", btnX + 12, panelY + 3, tabPage < pageCount - 1 ? 0xffffffff : 0x66ffffff, true);
         }
 
         // meme grid
@@ -175,12 +210,29 @@ public class MemePickerPanel {
                 return true;
             }
         }
+        // page arrows
+        if (mouseY >= panelY + 1 && mouseY < panelY + GROUP_HEADER_HEIGHT - 1
+                && tabPageCount() > 1) {
+            int btnX = gridX + gridWidth - 24;
+            if (mouseX >= btnX && mouseX < btnX + 12 && tabPage > 0) {
+                tabPage--;
+                return true;
+            }
+            if (mouseX >= btnX + 12 && mouseX < btnX + 24 && tabPage < tabPageCount() - 1) {
+                tabPage++;
+                return true;
+            }
+        }
         // memegroup tab click
         if (mouseY >= panelY + 1 && mouseY < panelY + GROUP_HEADER_HEIGHT - 1) {
+            int from = tabPage * tabsPerPage;
+            int to = Math.min(groups.size(), from + tabsPerPage);
             int tabX = gridX + 2;
             Font font = Minecraft.getInstance().font;
-            for (String group : groups) {
-                if (mouseX >= tabX && mouseX < tabX + font.width(group) + 8) {
+            for (int i = from; i < to; i++) {
+                String group = groups.get(i);
+                String display = MemechatEmojis.getInstance().groupDisplayName(selectedPack, group);
+                if (mouseX >= tabX && mouseX < tabX + font.width(display) + 8) {
                     if (!group.equals(selectedGroup)) {
                         selectedGroup = group;
                         memes = EmojiRegistry.getInstance().memesInGroup(selectedPack, selectedGroup);
@@ -188,7 +240,7 @@ public class MemePickerPanel {
                     }
                     return true;
                 }
-                tabX += font.width(group) + 10;
+                tabX += font.width(display) + 10;
             }
         }
         // meme grid click
