@@ -9,6 +9,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import pageqwq.memechat.MemechatConstants;
+import pageqwq.memechat.modernui.MemechatFontException;
 
 /**
  * ModernUI 兼容：ModernUI 的字体系统不支持 memeChat 的图片字形。

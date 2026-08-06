@@ -1,4 +1,4 @@
-package pageqwq.memechat.mixin;
+package pageqwq.memechat.modernui;
 
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.gui.Font;

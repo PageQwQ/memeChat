@@ -15,6 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import pageqwq.memechat.font.MemechatGlyph;
 import pageqwq.memechat.MixinHelpers;
+import pageqwq.memechat.modernui.ModernUICompat;
 
 /** 表情包渲染修复：取消粗体双渲染、描边渲染跳过、ModernUI 回退 */
 @Mixin(Font.class)
@@ -60,7 +61,7 @@ public abstract class FontMixin {
             float drawn = ModernUICompat.draw(text.getVisualOrderText(), x, y, color, dropShadow, matrix, source,
                     displayMode, colorBackground, packedLight);
             cir.setReturnValue((int) drawn + (dropShadow ? 1 : 0));
-        } catch (MemechatFontException ignored) {
+        } catch (pageqwq.memechat.modernui.MemechatFontException ignored) {
         }
     }
 
@@ -74,7 +75,7 @@ public abstract class FontMixin {
             float drawn = ModernUICompat.draw(text, x, y, color, dropShadow, matrix, source,
                     displayMode, colorBackground, packedLight);
             cir.setReturnValue((int) drawn + (dropShadow ? 1 : 0));
-        } catch (MemechatFontException ignored) {
+        } catch (pageqwq.memechat.modernui.MemechatFontException ignored) {
         }
     }
 }
