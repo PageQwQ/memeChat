@@ -23,6 +23,13 @@ public final class ModernUICompat {
     private static Method getRendererMethod;
     private static Method drawTextMethod;
 
+    /** 仅在 ModernUI 渲染调用链中允许布局抛 MemechatFontException（测量/宽度计算路径必须放行，否则崩溃） */
+    private static final ThreadLocal<Boolean> RENDERING = ThreadLocal.withInitial(() -> false);
+
+    public static boolean isRendering() {
+        return RENDERING.get();
+    }
+
     private ModernUICompat() {}
 
     public static boolean isActive() {
@@ -49,6 +56,7 @@ public final class ModernUICompat {
     public static float draw(FormattedCharSequence text, float x, float y, int color, boolean dropShadow,
                              Matrix4f matrix, MultiBufferSource source, Font.DisplayMode displayMode,
                              int colorBackground, int packedLight) {
+        RENDERING.set(true);
         try {
             Object renderer = getRendererMethod.invoke(engineInstance);
             return (float) drawTextMethod.invoke(renderer, text, x, y, color, dropShadow, matrix, source,
@@ -61,6 +69,8 @@ public final class ModernUICompat {
             throw new RuntimeException(cause);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
+        } finally {
+            RENDERING.set(false);
         }
     }
 }

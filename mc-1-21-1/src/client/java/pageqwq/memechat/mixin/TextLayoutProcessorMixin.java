@@ -10,6 +10,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import pageqwq.memechat.MemechatConstants;
 import pageqwq.memechat.modernui.MemechatFontException;
+import pageqwq.memechat.modernui.ModernUICompat;
 
 /**
  * ModernUI 兼容：ModernUI 的字体系统不支持 memeChat 的图片字形。
@@ -23,9 +24,12 @@ public abstract class TextLayoutProcessorMixin {
     @Inject(method = "lambda$new$1", at = @At("HEAD"))
     private void memechat$checkMeme(int index, Style style, int codePoint,
                                     CallbackInfoReturnable<Boolean> cir) {
-        ResourceLocation font = style.getFont();
-        if (font != null && font.equals(MemechatConstants.EMOJI_FONT)) {
-            throw new MemechatFontException();
+        // 只在 ModernUI 渲染调用链中抛出（回退 vanilla）；测量/宽度计算等路径放行，避免未捕获崩溃
+        if (ModernUICompat.isRendering()) {
+            ResourceLocation font = style.getFont();
+            if (font != null && font.equals(MemechatConstants.EMOJI_FONT)) {
+                throw new MemechatFontException();
+            }
         }
     }
 }
