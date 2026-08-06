@@ -10,9 +10,11 @@
     "CommandSuggestionsMixin",
     "ChatScreenMixin",
     "ScreenAccessor",
-    "SuggestionsListMixin"
+    "SuggestionsListMixin",
+    "FontMixin"
   ],
   "injectors": {
     "defaultRequire": 1
-  }
+  },
+  "priority": 100
 }

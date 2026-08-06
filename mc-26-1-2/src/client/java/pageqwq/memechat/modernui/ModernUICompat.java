@@ -1,0 +1,86 @@
+package pageqwq.memechat.modernui;
+
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.network.chat.FontDescription;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.FormattedCharSequence;
+import org.joml.Matrix4fc;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.Method;
+
+import pageqwq.memechat.MemechatConstants;
+
+/**
+ * ModernUI 反射桥：不依赖 ModernUI 编译，运行时反射调用其文本渲染。
+ * 含 memeChat 表情样式的文本由调用方（FontMixin）分段处理。
+ */
+public final class ModernUICompat {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger("memechat");
+
+    private static final String ENGINE = "icyllis.modernui.mc.text.TextLayoutEngine";
+    private static final String RENDERER = "icyllis.modernui.mc.text.ModernTextRenderer";
+
+    private static boolean checked;
+    private static boolean loaded;
+    private static Object engineInstance;
+    private static Method getRendererMethod;
+    private static Method drawTextMethod;
+
+    private ModernUICompat() {}
+
+    public static boolean isActive() {
+        if (!checked) {
+            checked = true;
+            if (FabricLoader.getInstance().isModLoaded("modernui")) {
+                try {
+                    Class<?> engine = Class.forName(ENGINE);
+                    engineInstance = engine.getMethod("getInstance").invoke(null);
+                    getRendererMethod = engine.getMethod("getTextRenderer");
+                    drawTextMethod = Class.forName(RENDERER).getMethod("drawText",
+                            FormattedCharSequence.class, float.class, float.class, int.class, boolean.class,
+                            Matrix4fc.class, MultiBufferSource.class, Font.DisplayMode.class, int.class, int.class);
+                    loaded = true;
+                    LOGGER.info("[memechat] ModernUI compat active");
+                } catch (Exception e) {
+                    loaded = false;
+                    LOGGER.warn("[memechat] ModernUI compat init failed: {}", e.toString());
+                }
+            } else {
+                LOGGER.info("[memechat] ModernUI not loaded, compat disabled");
+            }
+        }
+        return loaded;
+    }
+
+    /** 文本是否含 memeChat 表情样式 */
+    public static boolean containsMeme(FormattedCharSequence text) {
+        final boolean[] found = {false};
+        text.accept((index, style, codePoint) -> {
+            if (style.getFont() instanceof FontDescription.Resource resource
+                    && resource.id().equals(MemechatConstants.EMOJI_FONT)) {
+                found[0] = true;
+                return false;
+            }
+            return true;
+        });
+        return found[0];
+    }
+
+    /** 反射调用 ModernUI 渲染 */
+    public static float draw(FormattedCharSequence text, float x, float y, int color, boolean dropShadow,
+                             Matrix4fc matrix, MultiBufferSource source, Font.DisplayMode displayMode,
+                             int colorBackground, int packedLight) {
+        try {
+            Object renderer = getRendererMethod.invoke(engineInstance);
+            return (float) drawTextMethod.invoke(renderer, text, x, y, color, dropShadow, matrix, source,
+                    displayMode, colorBackground, packedLight);
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
