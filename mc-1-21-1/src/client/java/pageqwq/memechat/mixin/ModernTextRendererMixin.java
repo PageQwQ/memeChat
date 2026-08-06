@@ -22,7 +22,7 @@ import pageqwq.memechat.modernui.ModernUICompat;
 @Mixin(targets = "icyllis.modernui.mc.text.ModernTextRenderer", remap = false)
 public abstract class ModernTextRendererMixin {
 
-    @Inject(method = "drawText(Lnet/minecraft/util/FormattedCharSequence;FFFFZILorg/joml/Matrix4f;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/client/gui/Font$DisplayMode;II)F",
+    @Inject(method = "drawText(Lnet/minecraft/util/FormattedCharSequence;FFZILorg/joml/Matrix4f;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/client/gui/Font$DisplayMode;II)F",
             at = @At("HEAD"), cancellable = true)
     private void memechat$drawText(FormattedCharSequence text, float x, float y, int color, boolean dropShadow,
                                    Matrix4f matrix, MultiBufferSource source, Font.DisplayMode displayMode,
