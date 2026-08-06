@@ -13,9 +13,7 @@
     "CommandSuggestionsMixin",
     "SuggestionsListMixin",
     "ChatScreenMixin",
-    "ScreenAccessor",
-    "FontRenderInvoker",
-    "ModernTextRendererMixin"
+    "ScreenAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
