@@ -13,7 +13,8 @@
     "CommandSuggestionsMixin",
     "SuggestionsListMixin",
     "ChatScreenMixin",
-    "ScreenAccessor"
+    "ScreenAccessor",
+    "TextLayoutProcessorMixin"
   ],
   "injectors": {
     "defaultRequire": 1

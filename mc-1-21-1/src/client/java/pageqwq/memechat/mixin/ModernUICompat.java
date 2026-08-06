@@ -1,0 +1,66 @@
+package pageqwq.memechat.mixin;
+
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.util.FormattedCharSequence;
+import org.joml.Matrix4f;
+
+import java.lang.reflect.Method;
+
+/**
+ * ModernUI 反射桥：不依赖 ModernUI 编译，运行时反射调用其文本渲染。
+ * 渲染抛出的 MemechatFontException 直接传播给调用方（FontMixin 捕获后回退 vanilla）。
+ */
+public final class ModernUICompat {
+
+    private static final String ENGINE = "icyllis.modernui.mc.text.TextLayoutEngine";
+    private static final String RENDERER = "icyllis.modernui.mc.text.ModernTextRenderer";
+
+    private static boolean checked;
+    private static boolean loaded;
+    private static Object engineInstance;
+    private static Method getRendererMethod;
+    private static Method drawTextMethod;
+
+    private ModernUICompat() {}
+
+    public static boolean isActive() {
+        if (!checked) {
+            checked = true;
+            if (FabricLoader.getInstance().isModLoaded("modernui")) {
+                try {
+                    Class<?> engine = Class.forName(ENGINE);
+                    engineInstance = engine.getMethod("getInstance").invoke(null);
+                    getRendererMethod = engine.getMethod("getTextRenderer");
+                    drawTextMethod = Class.forName(RENDERER).getMethod("drawText",
+                            FormattedCharSequence.class, float.class, float.class, int.class, boolean.class,
+                            Matrix4f.class, MultiBufferSource.class, Font.DisplayMode.class, int.class, int.class);
+                    loaded = true;
+                } catch (Exception ignored) {
+                    loaded = false;
+                }
+            }
+        }
+        return loaded;
+    }
+
+    /** 反射调用 ModernUI 渲染；文本含 memechat:emoji 时会抛出 MemechatFontException */
+    public static float draw(FormattedCharSequence text, float x, float y, int color, boolean dropShadow,
+                             Matrix4f matrix, MultiBufferSource source, Font.DisplayMode displayMode,
+                             int colorBackground, int packedLight) {
+        try {
+            Object renderer = getRendererMethod.invoke(engineInstance);
+            return (float) drawTextMethod.invoke(renderer, text, x, y, color, dropShadow, matrix, source,
+                    displayMode, colorBackground, packedLight);
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof MemechatFontException) {
+                throw (MemechatFontException) cause;
+            }
+            throw new RuntimeException(cause);
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}

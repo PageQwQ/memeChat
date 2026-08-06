@@ -4,17 +4,19 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import pageqwq.memechat.font.MemechatGlyph;
 import pageqwq.memechat.MixinHelpers;
 
-/** 表情包渲染修复：取消粗体双渲染、描边渲染跳过 */
+/** 表情包渲染修复：取消粗体双渲染、描边渲染跳过、ModernUI 回退 */
 @Mixin(Font.class)
 public abstract class FontMixin {
     @Inject(method = "renderChar",
@@ -43,5 +45,36 @@ public abstract class FontMixin {
     private void memechat$postGlowOutlineRender(FormattedCharSequence formattedCharSequence, float f, float g, int i, int j,
                                                 Matrix4f matrix4f, MultiBufferSource multiBufferSource, int k, CallbackInfo ci) {
         MixinHelpers.shouldSkipEmojiGlyphRender = false;
+    }
+
+    // ---- ModernUI 兼容：默认走 ModernUI 渲染；文本含 memeChat 表情时
+    //     布局阶段抛 MemechatFontException，捕获后不 cancel，落回 vanilla 原版渲染 ----
+
+    @Inject(method = "drawInBatch(Lnet/minecraft/network/chat/Component;FFIZLorg/joml/Matrix4f;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/client/gui/Font$DisplayMode;II)I",
+            at = @At("HEAD"), cancellable = true)
+    private void memechat$modernuiDrawInBatch(Component text, float x, float y, int color, boolean dropShadow,
+                                              Matrix4f matrix, MultiBufferSource source, Font.DisplayMode displayMode,
+                                              int colorBackground, int packedLight, CallbackInfoReturnable<Integer> cir) {
+        if (!ModernUICompat.isActive()) return;
+        try {
+            float drawn = ModernUICompat.draw(text.getVisualOrderText(), x, y, color, dropShadow, matrix, source,
+                    displayMode, colorBackground, packedLight);
+            cir.setReturnValue((int) drawn + (dropShadow ? 1 : 0));
+        } catch (MemechatFontException ignored) {
+        }
+    }
+
+    @Inject(method = "drawInBatch(Lnet/minecraft/util/FormattedCharSequence;FFIZLorg/joml/Matrix4f;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/client/gui/Font$DisplayMode;II)I",
+            at = @At("HEAD"), cancellable = true)
+    private void memechat$modernuiDrawInBatchFcs(FormattedCharSequence text, float x, float y, int color, boolean dropShadow,
+                                                 Matrix4f matrix, MultiBufferSource source, Font.DisplayMode displayMode,
+                                                 int colorBackground, int packedLight, CallbackInfoReturnable<Integer> cir) {
+        if (!ModernUICompat.isActive()) return;
+        try {
+            float drawn = ModernUICompat.draw(text, x, y, color, dropShadow, matrix, source,
+                    displayMode, colorBackground, packedLight);
+            cir.setReturnValue((int) drawn + (dropShadow ? 1 : 0));
+        } catch (MemechatFontException ignored) {
+        }
     }
 }
