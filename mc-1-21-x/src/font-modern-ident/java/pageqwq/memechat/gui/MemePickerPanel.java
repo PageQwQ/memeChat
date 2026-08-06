@@ -87,7 +87,8 @@ public class MemePickerPanel {
         int count = 0;
         int w = 0;
         for (String group : groups) {
-            int gw = font.width(group) + 10;
+            String display = MemechatEmojis.getInstance().groupDisplayName(selectedPack, group);
+            int gw = font.width(display) + 10;
             if (count > 0 && w + gw > avail) break;
             w += gw;
             count++;
@@ -146,16 +147,17 @@ public class MemePickerPanel {
         int tabX = gridX + 2;
         for (int i = from; i < to; i++) {
             String group = groups.get(i);
+            String display = MemechatEmojis.getInstance().groupDisplayName(selectedPack, group);
             boolean selected = group.equals(selectedGroup);
-            boolean hovered = mouseX >= tabX && mouseX < tabX + font.width(group) + 8
+            boolean hovered = mouseX >= tabX && mouseX < tabX + font.width(display) + 8
                     && mouseY >= panelY + 1 && mouseY < panelY + GROUP_HEADER_HEIGHT - 1;
             if (selected) {
-                graphics.fill(tabX, panelY + 1, tabX + font.width(group) + 8, panelY + GROUP_HEADER_HEIGHT - 1, 0x6633aaff);
+                graphics.fill(tabX, panelY + 1, tabX + font.width(display) + 8, panelY + GROUP_HEADER_HEIGHT - 1, 0x6633aaff);
             } else if (hovered) {
-                graphics.fill(tabX, panelY + 1, tabX + font.width(group) + 8, panelY + GROUP_HEADER_HEIGHT - 1, 0x33ffffff);
+                graphics.fill(tabX, panelY + 1, tabX + font.width(display) + 8, panelY + GROUP_HEADER_HEIGHT - 1, 0x33ffffff);
             }
-            graphics.drawString(font, group, tabX + 4, panelY + 3, selected ? 0xffffcc00 : 0xffffffff, true);
-            tabX += font.width(group) + 10;
+            graphics.drawString(font, display, tabX + 4, panelY + 3, selected ? 0xffffcc00 : 0xffffffff, true);
+            tabX += font.width(display) + 10;
         }
         // page arrows
         if (pageCount > 1) {
@@ -233,7 +235,8 @@ public class MemePickerPanel {
             Font font = net.minecraft.client.Minecraft.getInstance().font;
             for (int i = from; i < to; i++) {
                 String group = groups.get(i);
-                if (mouseX >= tabX && mouseX < tabX + font.width(group) + 8) {
+                String display = MemechatEmojis.getInstance().groupDisplayName(selectedPack, group);
+                if (mouseX >= tabX && mouseX < tabX + font.width(display) + 8) {
                     if (!group.equals(selectedGroup)) {
                         selectedGroup = group;
                         memes = EmojiRegistry.getInstance().memesInGroup(selectedPack, selectedGroup);
@@ -241,7 +244,7 @@ public class MemePickerPanel {
                     }
                     return true;
                 }
-                tabX += font.width(group) + 10;
+                tabX += font.width(display) + 10;
             }
         }
         // meme grid click

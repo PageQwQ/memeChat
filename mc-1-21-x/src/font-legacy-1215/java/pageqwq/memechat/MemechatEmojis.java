@@ -8,8 +8,13 @@ import org.slf4j.LoggerFactory;
 
 import pageqwq.memechat.common.Emoji;
 import pageqwq.memechat.common.EmojiRegistry;
+import pageqwq.memechat.common.GroupListParser;
 
 import java.util.Comparator;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +36,7 @@ public final class MemechatEmojis {
 
     private final Map<Integer, MemechatEmoji> byId = new ConcurrentHashMap<>();
     private final Map<String, String> packNames = new LinkedHashMap<>();
+    private final Map<String, Map<String, String>> groupDisplayNames = new HashMap<>();
     private final EmojiRegistry registry = EmojiRegistry.getInstance();
 
     private MemechatEmojis() {}
@@ -44,6 +50,7 @@ public final class MemechatEmojis {
         registry.beginReload();
         byId.clear();
         packNames.clear();
+        groupDisplayNames.clear();
 
         // 包显示名直接取材质包文件夹名（packId），不读 pack.mcmeta description
         resourceManager.listPacks().forEach(pack -> {
@@ -61,6 +68,20 @@ public final class MemechatEmojis {
                             }
                         }));
 
+        // 读取每个包的 grouplist.txt：分组目录 → 显示名映射
+        resourceManager.listPacks().forEach(pack -> {
+            var supplier = pack.getResource(PackType.CLIENT_RESOURCES,
+                    ResourceLocation.fromNamespaceAndPath(MemechatConstants.NAMESPACE, "memes/grouplist.txt"));
+            if (supplier != null) {
+                try (InputStream in = supplier.get()) {
+                    groupDisplayNames.put(pack.packId(),
+                            GroupListParser.parse(new String(in.readAllBytes(), StandardCharsets.UTF_8)));
+                } catch (IOException e) {
+                    LOGGER.warn("[memechat] failed to read grouplist.txt from {}", pack.packId(), e);
+                }
+            }
+        });
+
         LOGGER.info("[memechat] Discovered {} memes", registry.all().size());
     }
 
@@ -74,6 +95,16 @@ public final class MemechatEmojis {
 
     public String displayName(String packId) {
         return packNames.getOrDefault(packId, packId);
+    }
+
+    /** grouplist.txt 映射的分组显示名；未映射时返回原目录名 */
+    public String groupDisplayName(String packId, String group) {
+        Map<String, String> map = groupDisplayNames.get(packId);
+        if (map != null) {
+            String name = map.get(group);
+            if (name != null && !name.isBlank()) return name;
+        }
+        return group;
     }
 
     public MemechatEmoji byId(int id) {
