@@ -23,7 +23,8 @@ public class MemeButton extends Button {
         }
         int iconSize = 8;
         int offset = (getWidth() - iconSize) / 2;
-        graphics.blit(ICON, getX() + offset, getY() + offset, iconSize, iconSize,
-                0f, 0f, 1f, 1f);
+        graphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED,
+                ICON, getX() + offset, getY() + offset,
+                0, 0, iconSize, iconSize, iconSize, iconSize);
     }
 }

@@ -74,6 +74,7 @@ public class MemePickerPanel {
             selectedGroup = groups.get(0);
         }
         memes = registry.memesInGroup(selectedPack, selectedGroup);
+        System.out.println("[memechat] panel: pack=" + selectedPack + " groups=" + groups + " memes=" + memes.size());
         scrollOffset = 0;
     }
 
@@ -152,18 +153,18 @@ public class MemePickerPanel {
         }
     }
 
-    /** Renders the meme through the font pipeline (code point + emoji font style) */
+    /** Renders the meme through GuiGraphics (GuiRenderState path, same as chat text) */
     private void renderEmoji(Emoji emoji, GuiGraphics graphics, int x, int y, int size) {
         if (MemechatEmojis.getInstance().byId(emoji.id()) == null) return;
         Font font = Minecraft.getInstance().font;
         Component component = Component.literal(Character.toString(emoji.codePoint()))
                 .setStyle(Style.EMPTY.withFont(new FontDescription.Resource(MemechatConstants.EMOJI_FONT)));
-        org.joml.Matrix4f matrix = new org.joml.Matrix4f()
-                .translate(x, y, 0f)
-                .scale(size / 8f, size / 8f, 1f);
-        font.drawInBatch(component, 0f, 0f, 0xFFFFFFFF, false, matrix,
-                Minecraft.getInstance().renderBuffers().bufferSource(),
-                Font.DisplayMode.NORMAL, 0xF000F0, 0);
+        var pose = graphics.pose();
+        pose.pushMatrix();
+        pose.translate(x, y);
+        pose.scale(size / 8f, size / 8f);
+        graphics.drawString(font, component, 0, 0, 0xFFFFFFFF, false);
+        pose.popMatrix();
     }
 
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
