@@ -37,12 +37,9 @@ public abstract class FontMixin {
         MixinHelpers.shouldSkipEmojiGlyphRender = true;
     }
 
+    // 用 RETURN 而非 INVOKE ordinal：其他渲染 mod（如 iris）可能改写方法内字节码导致注入目标消失
     @Inject(method = "drawInBatch8xOutline",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/util/FormattedCharSequence;accept(Lnet/minecraft/util/FormattedCharSink;)Z",
-                    ordinal = 1
-            ))
+            at = @At("RETURN"))
     private void memechat$postGlowOutlineRender(FormattedCharSequence formattedCharSequence, float f, float g, int i, int j,
                                                 Matrix4f matrix4f, MultiBufferSource multiBufferSource, int k, CallbackInfo ci) {
         MixinHelpers.shouldSkipEmojiGlyphRender = false;
