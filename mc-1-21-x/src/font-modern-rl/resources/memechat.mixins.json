@@ -10,7 +10,8 @@
     "CommandSuggestionsMixin",
     "ChatScreenMixin",
     "ScreenAccessor",
-    "SuggestionsListMixin"
+    "SuggestionsListMixin",
+    "GuiGraphicsAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
