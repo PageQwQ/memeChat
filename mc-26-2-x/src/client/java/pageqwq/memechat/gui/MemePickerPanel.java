@@ -155,9 +155,12 @@ public class MemePickerPanel {
         Component component = Component.literal(Character.toString(emoji.codePoint()))
                 .setStyle(Style.EMPTY.withFont(
                         new FontDescription.Resource(MemechatConstants.EMOJI_FONT)));
-        // render-state text (no scaling; drawn at font height)
-        int offset = (size - font.lineHeight) / 2;
-        graphics.text(font, component, x + offset, y + offset, 0xFFFFFFFF, false);
+        var pose = graphics.pose();
+        pose.pushMatrix();
+        pose.translate(x, y);
+        pose.scale(size / 8f, size / 8f);
+        graphics.text(font, component, 0, 0, 0xFFFFFFFF, false);
+        pose.popMatrix();
     }
 
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
