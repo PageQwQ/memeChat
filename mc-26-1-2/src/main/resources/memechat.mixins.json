@@ -11,7 +11,8 @@
     "ChatScreenMixin",
     "ScreenAccessor",
     "SuggestionsListMixin",
-    "FontMixin"
+    "FontMixin",
+    "TextLayoutMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -14,7 +14,7 @@ public class MemechatGlyphSource implements GlyphSource {
 
     @Override
     public BakedGlyph getGlyph(int codePoint) {
-        var emoji = MemechatEmojis.getInstance().byId(codePoint - 33);
+        var emoji = MemechatEmojis.getInstance().byId(codePoint - 0xE000);
         if (emoji == null) return MemechatGlyphs.error();
         return emoji.getGlyph();
     }

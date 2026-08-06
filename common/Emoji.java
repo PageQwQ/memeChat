@@ -11,6 +11,6 @@ public record Emoji(int id, String name, String path, boolean isGif, String grou
 
     /** The code point used for rendering (only interpreted inside the memechat:emoji font) */
     public int codePoint() {
-        return id + 33;
+        return id + 0xE000;
     }
 }
