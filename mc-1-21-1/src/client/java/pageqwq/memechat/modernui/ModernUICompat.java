@@ -3,14 +3,17 @@ package pageqwq.memechat.modernui;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import org.joml.Matrix4f;
 
 import java.lang.reflect.Method;
 
+import pageqwq.memechat.MemechatConstants;
+
 /**
  * ModernUI 反射桥：不依赖 ModernUI 编译，运行时反射调用其文本渲染。
- * 渲染抛出的 MemechatFontException 直接传播给调用方（FontMixin 捕获后回退 vanilla）。
+ * 含 memeChat 表情样式的文本由调用方（FontMixin）改用 vanilla 渲染。
  */
 public final class ModernUICompat {
 
@@ -22,13 +25,6 @@ public final class ModernUICompat {
     private static Object engineInstance;
     private static Method getRendererMethod;
     private static Method drawTextMethod;
-
-    /** 仅在 ModernUI 渲染调用链中允许布局抛 MemechatFontException（测量/宽度计算路径必须放行，否则崩溃） */
-    private static final ThreadLocal<Boolean> RENDERING = ThreadLocal.withInitial(() -> false);
-
-    public static boolean isRendering() {
-        return RENDERING.get();
-    }
 
     private ModernUICompat() {}
 
@@ -56,27 +52,30 @@ public final class ModernUICompat {
         return loaded;
     }
 
-    /** 反射调用 ModernUI 渲染；文本含 memechat:emoji 时会抛出 MemechatFontException */
+    /** 文本是否含 memeChat 表情样式（emojChat:emoji 字体） */
+    public static boolean containsMeme(FormattedCharSequence text) {
+        final boolean[] found = {false};
+        text.accept((index, style, codePoint) -> {
+            ResourceLocation font = style.getFont();
+            if (font != null && font.equals(MemechatConstants.EMOJI_FONT)) {
+                found[0] = true;
+                return false;
+            }
+            return true;
+        });
+        return found[0];
+    }
+
+    /** 反射调用 ModernUI 渲染 */
     public static float draw(FormattedCharSequence text, float x, float y, int color, boolean dropShadow,
                              Matrix4f matrix, MultiBufferSource source, Font.DisplayMode displayMode,
                              int colorBackground, int packedLight) {
-        RENDERING.set(true);
         try {
             Object renderer = getRendererMethod.invoke(engineInstance);
-            float result = (float) drawTextMethod.invoke(renderer, text, x, y, color, dropShadow, matrix, source,
+            return (float) drawTextMethod.invoke(renderer, text, x, y, color, dropShadow, matrix, source,
                     displayMode, colorBackground, packedLight);
-            System.out.println("[memechat] ModernUI draw succeeded");
-            return result;
-        } catch (java.lang.reflect.InvocationTargetException e) {
-            Throwable cause = e.getCause();
-            if (cause instanceof MemechatFontException) {
-                throw (MemechatFontException) cause;
-            }
-            throw new RuntimeException(cause);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
-        } finally {
-            RENDERING.set(false);
         }
     }
 }

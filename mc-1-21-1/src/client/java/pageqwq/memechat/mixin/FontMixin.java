@@ -1,6 +1,7 @@
 package pageqwq.memechat.mixin;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -49,7 +50,7 @@ public abstract class FontMixin {
     }
 
     // ---- ModernUI 兼容：默认走 ModernUI 渲染；文本含 memeChat 表情时
-    //     布局阶段抛 MemechatFontException，捕获后不 cancel，落回 vanilla 原版渲染 ----
+    //     直接改用 vanilla renderText 绘制（ModernUI 布局缓存会绕过异常方案，需主动检测） ----
 
     @Inject(method = "drawInBatch(Lnet/minecraft/network/chat/Component;FFIZLorg/joml/Matrix4f;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/client/gui/Font$DisplayMode;II)I",
             at = @At("HEAD"), cancellable = true)
@@ -57,12 +58,13 @@ public abstract class FontMixin {
                                               Matrix4f matrix, MultiBufferSource source, Font.DisplayMode displayMode,
                                               int colorBackground, int packedLight, CallbackInfoReturnable<Integer> cir) {
         if (!ModernUICompat.isActive()) return;
-        System.out.println("[memechat] drawInBatch(Component) intercepted");
-        try {
-            float drawn = ModernUICompat.draw(text.getVisualOrderText(), x, y, color, dropShadow, matrix, source,
-                    displayMode, colorBackground, packedLight);
-            cir.setReturnValue((int) drawn + (dropShadow ? 1 : 0));
-        } catch (pageqwq.memechat.modernui.MemechatFontException ignored) {
+        FormattedCharSequence sequence = text.getVisualOrderText();
+        if (ModernUICompat.containsMeme(sequence)) {
+            cir.setReturnValue((int) renderVanilla(sequence, x, y, color, dropShadow, matrix, source,
+                    displayMode, colorBackground, packedLight));
+        } else {
+            cir.setReturnValue((int) ModernUICompat.draw(sequence, x, y, color, dropShadow, matrix, source,
+                    displayMode, colorBackground, packedLight) + (dropShadow ? 1 : 0));
         }
     }
 
@@ -72,11 +74,21 @@ public abstract class FontMixin {
                                                  Matrix4f matrix, MultiBufferSource source, Font.DisplayMode displayMode,
                                                  int colorBackground, int packedLight, CallbackInfoReturnable<Integer> cir) {
         if (!ModernUICompat.isActive()) return;
-        try {
-            float drawn = ModernUICompat.draw(text, x, y, color, dropShadow, matrix, source,
-                    displayMode, colorBackground, packedLight);
-            cir.setReturnValue((int) drawn + (dropShadow ? 1 : 0));
-        } catch (pageqwq.memechat.modernui.MemechatFontException ignored) {
+        if (ModernUICompat.containsMeme(text)) {
+            cir.setReturnValue((int) renderVanilla(text, x, y, color, dropShadow, matrix, source,
+                    displayMode, colorBackground, packedLight));
+        } else {
+            cir.setReturnValue((int) ModernUICompat.draw(text, x, y, color, dropShadow, matrix, source,
+                    displayMode, colorBackground, packedLight) + (dropShadow ? 1 : 0));
         }
+    }
+
+    private static float renderVanilla(FormattedCharSequence text, float x, float y, int color, boolean dropShadow,
+                                       Matrix4f matrix, MultiBufferSource source, Font.DisplayMode displayMode,
+                                       int colorBackground, int packedLight) {
+        System.out.println("[memechat] vanilla fallback render");
+        return ((FontRenderInvoker) (Object) Minecraft.getInstance().font)
+                .memechat$invokeRenderText(text, x, y, color, dropShadow, matrix, source,
+                        displayMode, colorBackground, packedLight);
     }
 }
