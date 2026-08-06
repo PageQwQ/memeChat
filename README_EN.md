@@ -2,6 +2,28 @@
 
 A Fabric chat-meme mod: replace `:name:` syntax in chat with images (PNG stills / GIF animations) anywhere text renders. Includes chat completion, a meme picker panel, and multi-resource-pack support.
 
+## Repository Layout
+
+| Repository | Description |
+|---|---|
+| [PageQwQ/mcmcChat-core](https://github.com/PageQwQ/mcmcChat-core) | Core pure-Java shared layer (emoji registry, parsers, grouplist), no Minecraft dependency |
+| [PageQwQ/memeChat](https://github.com/PageQwQ/memeChat) (this repo) | The mod itself; `main` holds the overview and the test pack, **each supported version lives on its own branch** |
+
+Branches in this repository:
+
+| Branch | Version |
+|---|---|
+| `1.21.1` | 1.21.1 (legacy font) |
+| `1.21.2` – `1.21.11` | 1.21.2 – 1.21.11 (one branch per version) |
+| `26.1.2` / `26.2` | 26.1.2 / 26.2 |
+
+Clone a branch and build directly:
+
+```bash
+git clone -b 1.21.9 https://github.com/PageQwQ/memeChat.git
+cd memeChat && ./gradlew build
+```
+
 ## Features
 
 - **Chat memes**: type `:name:` in chat; the image is rendered wherever the text appears (chat messages, signs, books, commands, etc.)

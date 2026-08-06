@@ -2,6 +2,28 @@
 
 一个 Fabric 聊天表情包模组：在聊天中通过 `:名字:` 语法把任意文本替换为图片（PNG 静态图 / GIF 动图），支持全局文本显示、聊天补全、表情选择面板与多资源包管理。
 
+## 仓库结构
+
+| 仓库 | 说明 |
+|---|---|
+| [PageQwQ/mcmcChat-core](https://github.com/PageQwQ/mcmcChat-core) | 核心纯 Java 共享层（表情注册表、解析器、grouplist），不依赖 Minecraft |
+| [PageQwQ/memeChat](https://github.com/PageQwQ/memeChat)（本仓库） | 模组本体；`main` 分支为总览与测试资源包，**各支持版本代码分分支存放** |
+
+本仓库分支列表：
+
+| 分支 | 版本 |
+|---|---|
+| `1.21.1` | 1.21.1（旧式字体） |
+| `1.21.2` ~ `1.21.11` | 1.21.2 ~ 1.21.11（各版本独立分支） |
+| `26.1.2` / `26.2` | 26.1.2 / 26.2 |
+
+克隆对应分支后可直接构建：
+
+```bash
+git clone -b 1.21.9 https://github.com/PageQwQ/memeChat.git
+cd memeChat && ./gradlew build
+```
+
 ## 功能特性
 
 - **聊天表情包**：在聊天框输入 `:名字:`，发送后任意文本位置（聊天消息、告示牌、书本、命令等）都会显示对应图片
