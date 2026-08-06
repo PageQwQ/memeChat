@@ -14,7 +14,8 @@
     "SuggestionsListMixin",
     "ChatScreenMixin",
     "ScreenAccessor",
-    "FontRenderInvoker"
+    "FontRenderInvoker",
+    "ModernTextRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

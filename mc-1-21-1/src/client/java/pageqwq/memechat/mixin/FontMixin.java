@@ -7,9 +7,6 @@ import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
-
-import java.util.ArrayList;
-import java.util.List;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -20,6 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import pageqwq.memechat.MemechatConstants;
 import pageqwq.memechat.font.MemechatGlyph;
 import pageqwq.memechat.MixinHelpers;
+import pageqwq.memechat.modernui.MixedRenderer;
 import pageqwq.memechat.modernui.ModernUICompat;
 
 /** 表情包渲染修复：取消粗体双渲染、描边渲染跳过、ModernUI 回退 */
@@ -77,45 +75,10 @@ public abstract class FontMixin {
                 displayMode, colorBackground, packedLight) + (dropShadow ? 1 : 0));
     }
 
-    /** 混合渲染：普通文字段走 ModernUI（字体/亮度一致），表情段走 vanilla（图片字形） */
     private static float renderMixed(FormattedCharSequence text, float x, float y, int color, boolean dropShadow,
                                      Matrix4f matrix, MultiBufferSource source, Font.DisplayMode displayMode,
                                      int colorBackground, int packedLight) {
-        List<Segment> segments = new ArrayList<>();
-        text.accept((index, style, codePoint) -> {
-            boolean meme = style.getFont() != null && style.getFont().equals(MemechatConstants.EMOJI_FONT);
-            Segment last = segments.isEmpty() ? null : segments.get(segments.size() - 1);
-            if (last == null || last.meme != meme || !last.style.equals(style)) {
-                segments.add(new Segment(style, meme));
-                last = segments.get(segments.size() - 1);
-            }
-            last.text.appendCodePoint(codePoint);
-            return true;
-        });
-        float cx = x;
-        for (Segment s : segments) {
-            FormattedCharSequence seq = Component.literal(s.text.toString())
-                    .withStyle(s.style).getVisualOrderText();
-            if (s.meme) {
-                cx = ((FontRenderInvoker) (Object) Minecraft.getInstance().font)
-                        .memechat$invokeRenderText(seq, cx, y, color, dropShadow, matrix, source,
-                                displayMode, colorBackground, packedLight);
-            } else {
-                cx = ModernUICompat.draw(seq, cx, y, color, dropShadow, matrix, source,
-                        displayMode, colorBackground, packedLight);
-            }
-        }
-        return cx;
-    }
-
-    private static final class Segment {
-        final net.minecraft.network.chat.Style style;
-        final boolean meme;
-        final StringBuilder text = new StringBuilder();
-
-        Segment(net.minecraft.network.chat.Style style, boolean meme) {
-            this.style = style;
-            this.meme = meme;
-        }
+        return MixedRenderer.render(text, x, y, color, dropShadow, matrix, source,
+                displayMode, colorBackground, packedLight);
     }
 }
