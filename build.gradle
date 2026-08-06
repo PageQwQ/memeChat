@@ -11,4 +11,4 @@ java {
 group = 'pageqwq.memechat'
 version = '0.1.0'
 
-sourceSets.main.java.srcDirs += file('common/src/main/java')
+sourceSets.main.java.srcDirs += file('common')

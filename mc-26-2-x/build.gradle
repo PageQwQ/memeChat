@@ -60,7 +60,7 @@ dependencies {
 // 共享纯 Java common 源码
 sourceSets {
     main {
-        java.srcDirs += file('../common/src/main/java')
+        java.srcDirs += file('../common')
     }
 }
 
