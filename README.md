@@ -1,92 +1,92 @@
 # memeChat
 
-一个 Fabric 聊天表情包模组：在聊天中通过 `:名字:` 语法把任意文本替换为图片（PNG 静态图 / GIF 动图），支持全局文本显示、聊天补全、表情选择面板与多资源包管理。
+A Fabric chat-meme mod: replace `:name:` syntax in chat with images (PNG stills / GIF animations) anywhere text renders. Includes chat completion, a meme picker panel, and multi-resource-pack support.
 
-## 仓库结构
+## Repository Layout
 
-| 仓库 | 说明 |
+| Repository | Description |
 |---|---|
-| [PageQwQ/mcmcChat-core](https://github.com/PageQwQ/mcmcChat-core) | 核心纯 Java 共享层（表情注册表、解析器、grouplist），不依赖 Minecraft |
-| [PageQwQ/memeChat](https://github.com/PageQwQ/memeChat)（本仓库） | 模组本体；`main` 分支为总览与测试资源包，**各支持版本代码分分支存放** |
+| [PageQwQ/mcmcChat-core](https://github.com/PageQwQ/mcmcChat-core) | Core pure-Java shared layer (emoji registry, parsers, grouplist), no Minecraft dependency |
+| [PageQwQ/memeChat](https://github.com/PageQwQ/memeChat) (this repo) | The mod itself; `main` holds the overview and the test pack, **each supported version lives on its own branch** |
 
-本仓库分支列表：
+Branches in this repository:
 
-| 分支 | 版本 |
+| Branch | Version |
 |---|---|
-| `1.21.1` | 1.21.1（旧式字体） |
-| `1.21.2` ~ `1.21.11` | 1.21.2 ~ 1.21.11（各版本独立分支） |
+| `1.21.1` | 1.21.1 (legacy font) |
+| `1.21.2` – `1.21.11` | 1.21.2 – 1.21.11 (one branch per version) |
 | `26.1.2` / `26.2` | 26.1.2 / 26.2 |
 
-克隆对应分支后可直接构建：
+Clone a branch and build directly:
 
 ```bash
 git clone -b 1.21.9 https://github.com/PageQwQ/memeChat.git
 cd memeChat && ./gradlew build
 ```
 
-## 功能特性
+## Features
 
-- **聊天表情包**：在聊天框输入 `:名字:`，发送后任意文本位置（聊天消息、告示牌、书本、命令等）都会显示对应图片
-- **GIF 动图**：支持 GIF 帧动画，按帧间隔循环播放
-- **聊天补全**：输入 `:名字` 前缀时弹出候选列表，候选左侧显示表情预览图
-- **转义语法**：`\:名字:` 以普通文本形式显示，不替换为图片
-- **表情选择面板**：点击聊天框上方 ☺ 按钮打开面板，左侧选择资源包、右侧按分组浏览表情，点击即可插入 `:名字:`
-- **多资源包支持**：多个资源包的表情独立分组显示，包名直接取材质包文件夹名
-- **分组翻页**：分组过多时 tab 行自动分页，`<` `>` 箭头翻页
-- **自定义分组显示名**：通过 `grouplist.txt` 把分组目录名映射为任意显示名（如中文），绕开 Minecraft 资源路径只允许 ASCII 的限制
+- **Chat memes**: type `:name:` in chat; the image is rendered wherever the text appears (chat messages, signs, books, commands, etc.)
+- **GIF animation**: animated GIFs play frame-by-frame at their stored frame delays
+- **Chat completion**: typing `:name` shows candidate suggestions with the meme preview on the left
+- **Escape syntax**: `\:name:` renders as literal text instead of an image
+- **Meme picker panel**: click the ☺ button above the chat box to open the panel — pick a resource pack on the left, browse groups on the right, click a meme to insert `:name:`
+- **Multi-pack support**: memes from different resource packs are listed independently; pack labels use the pack folder name
+- **Group paging**: when there are too many groups, the tab row pages with `<` `>` arrows
+- **Custom group display names**: map group folder names to any display name (e.g. Chinese) via `grouplist.txt`, working around Minecraft's ASCII-only resource path restriction
 
-## 使用说明
+## Usage
 
-| 输入 | 效果 |
+| Input | Result |
 |---|---|
-| `:beluga:` | 显示名为 beluga 的表情包图片 |
-| `\:beluga:` | 显示字面文本 `:beluga:`（转义） |
-| `:be`（输入中） | 弹出补全候选，候选左侧显示预览图 |
-| ☺ 按钮（聊天框上方） | 打开表情选择面板 |
+| `:beluga:` | Renders the meme image named beluga |
+| `\:beluga:` | Renders the literal text `:beluga:` (escaped) |
+| `:be` (while typing) | Shows completion candidates with meme previews |
+| ☺ button (above chat box) | Opens the meme picker panel |
 
-## 资源包格式
+## Resource Pack Format
 
-表情包通过任意资源包加载，目录结构如下：
+Memes are loaded from any resource pack, using this layout:
 
 ```
-材质包/
+pack/
 ├── pack.mcmeta
 └── assets/
     └── memechat/
         └── memes/
-            ├── beluga.png          # 直接放在 memes 下 → 分组 "default"
-            ├── animated.gif        # GIF 动图
-            ├── grouplist.txt       # 可选：分组显示名映射
-            ├── memegroup/          # 子目录 → 分组 "memegroup"
+            ├── beluga.png          # directly in memes/ → group "default"
+            ├── animated.gif        # animated GIF
+            ├── grouplist.txt       # optional: group display-name mapping
+            ├── memegroup/          # subdirectory → group "memegroup"
             │   ├── examplememe.png
             │   └── examplememe2.png
             └── group2/
                 └── aaaa.gif
 ```
 
-- 文件名（不含扩展名）即为表情包名字，用于 `:名字:` 语法
-- 子目录名即为分组名，在面板中按组浏览
-- `grouplist.txt` 语法（每行一条，逗号结尾）：
+- The file name (without extension) is the meme name used with `:name:`
+- Each subdirectory is a group, browsed separately in the panel
+- `grouplist.txt` syntax (one entry per line, comma-terminated):
 
 ```
-memegroup/ == "自定义名字",
-group2/ == "组别2",
+memegroup/ == "Custom Name",
+group2/ == "Group 2",
 ```
 
-## 支持版本
+## Supported Versions
 
-| 版本 | 说明 |
+| Version | Notes |
 |---|---|
-| 1.21.1 | 独立项目 `mc-1-21-1/` |
-| 1.21.2 ~ 1.21.11 | 单项目 `mc-1-21-x/`，构建时用 `-Pmc_version=X` 切换 |
-| 26.1.2 / 26.2 | 独立项目 `mc-26-1-2/`、`mc-26-2-x/` |
+| 1.21.1 | Standalone project `mc-1-21-1/` |
+| 1.21.2 – 1.21.11 | Single project `mc-1-21-x/`; switch with `-Pmc_version=X` |
+| 26.1.2 / 26.2 | Standalone projects `mc-26-1-2/`, `mc-26-2-x/` |
 
-## 构建
+## Building
 
 ```bash
-# 1.21.x（1.21.2 ~ 1.21.11）
+# 1.21.x (1.21.2 – 1.21.11)
 cd mc-1-21-x
-./gradlew build -Pmc_version=1.21.9          # 任意 1.21.2~1.21.11
+./gradlew build -Pmc_version=1.21.9          # any version 1.21.2–1.21.11
 
 # 1.21.1
 cd mc-1-21-1
@@ -97,16 +97,16 @@ cd mc-26-1-2 && ./gradlew build
 cd mc-26-2-x && ./gradlew build
 ```
 
-运行游戏验证：
+Running the client for verification:
 
 ```bash
-# 1.21.1 ~ 1.21.8 需要 JDK 21
-JAVA_HOME=<jdk21路径> ./gradlew runClient
+# 1.21.1 – 1.21.8 require JDK 21
+JAVA_HOME=<jdk21 path> ./gradlew runClient
 
-# 1.21.9 ~ 1.21.11 与 26.x 需要 JDK 25（mixins.json 声明了 JAVA_25）
-JAVA_HOME=<jdk25路径> ./gradlew runClient -Pmc_version=1.21.9
+# 1.21.9 – 1.21.11 and 26.x require JDK 25 (mixins.json declares JAVA_25)
+JAVA_HOME=<jdk25 path> ./gradlew runClient -Pmc_version=1.21.9
 ```
 
-## 测试资源包
+## Test Pack
 
-`test-pack/` 内含示例资源包（beluga.png、animated.gif、分组示例、grouplist.txt），可复制到游戏的 resourcepacks 目录后启用。注意：资源包目录名与文件路径只允许小写字母、数字、`_`、`-`、`.`，中文或特殊字符会被 Minecraft 忽略。
+`test-pack/` contains a sample resource pack (beluga.png, animated.gif, group examples, grouplist.txt). Copy it into your game's `resourcepacks` folder and enable it. Note: resource pack folder and file paths may only contain lowercase letters, digits, `_`, `-`, and `.` — Chinese or special characters are ignored by Minecraft.
