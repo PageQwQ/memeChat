@@ -11,7 +11,7 @@ import org.joml.Matrix4fc;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,25 +28,26 @@ import pageqwq.memechat.modernui.VanillaGlyphRenderer;
 @Mixin(Font.class)
 public abstract class FontMixin {
 
-    @Inject(method = "drawInBatch(Lnet/minecraft/network/chat/Component;FFIZLorg/joml/Matrix4fc;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/client/gui/Font$DisplayMode;II)I",
+    @Inject(method = "drawInBatch(Lnet/minecraft/network/chat/Component;FFIZLorg/joml/Matrix4fc;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/client/gui/Font$DisplayMode;II)V",
             at = @At("HEAD"), cancellable = true)
     private void memechat$modernuiDrawInBatch(Component text, float x, float y, int color, boolean dropShadow,
                                               Matrix4fc matrix, MultiBufferSource source, Font.DisplayMode displayMode,
-                                              int colorBackground, int packedLight, CallbackInfoReturnable<Integer> cir) {
+                                              int colorBackground, int packedLight, CallbackInfo ci) {
         if (!ModernUICompat.isActive()) return;
-        FormattedCharSequence sequence = Language.getInstance().getVisualOrder(text);
-        cir.setReturnValue((int) renderMixed(sequence, x, y, color, dropShadow, matrix, source,
-                displayMode, colorBackground, packedLight) + (dropShadow ? 1 : 0));
+        renderMixed(Language.getInstance().getVisualOrder(text), x, y, color, dropShadow, matrix, source,
+                displayMode, colorBackground, packedLight);
+        ci.cancel();
     }
 
-    @Inject(method = "drawInBatch(Lnet/minecraft/util/FormattedCharSequence;FFIZLorg/joml/Matrix4fc;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/client/gui/Font$DisplayMode;II)I",
+    @Inject(method = "drawInBatch(Lnet/minecraft/util/FormattedCharSequence;FFIZLorg/joml/Matrix4fc;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/client/gui/Font$DisplayMode;II)V",
             at = @At("HEAD"), cancellable = true)
     private void memechat$modernuiDrawInBatchFcs(FormattedCharSequence text, float x, float y, int color, boolean dropShadow,
                                                  Matrix4fc matrix, MultiBufferSource source, Font.DisplayMode displayMode,
-                                                 int colorBackground, int packedLight, CallbackInfoReturnable<Integer> cir) {
+                                                 int colorBackground, int packedLight, CallbackInfo ci) {
         if (!ModernUICompat.isActive()) return;
-        cir.setReturnValue((int) renderMixed(text, x, y, color, dropShadow, matrix, source,
-                displayMode, colorBackground, packedLight) + (dropShadow ? 1 : 0));
+        renderMixed(text, x, y, color, dropShadow, matrix, source,
+                displayMode, colorBackground, packedLight);
+        ci.cancel();
     }
 
     /** 混合渲染：普通文字段走 ModernUI，表情段走 vanilla prepareText 管线 */
