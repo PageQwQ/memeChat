@@ -18,7 +18,7 @@ import pageqwq.memechat.MemechatEmojis;
 
 /**
  * 过渡式（1.21.6~1.21.9）表情包字体集：旧式 FontSet 构造。
- * 码点映射：codePoint = id + 33。
+ * 码点映射：codePoint = id + 0xE000。
  */
 public class MemechatFontSet extends FontSet {
 
@@ -32,11 +32,11 @@ public class MemechatFontSet extends FontSet {
     }
 
     public static int codePointToId(int codePoint) {
-        return codePoint - 33;
+        return codePoint - 0xE000;
     }
 
     public static int idToCodePoint(int id) {
-        return id + 33;
+        return id + 0xE000;
     }
 
     @Override

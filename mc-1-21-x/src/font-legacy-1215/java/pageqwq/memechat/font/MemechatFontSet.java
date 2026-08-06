@@ -20,7 +20,7 @@ import pageqwq.memechat.font.MemechatGlyphs;
 
 /**
  * 表情包字体集（移植自 emogg EmojiFontSet）。
- * 码点映射：codePoint = id + 33（仅在 memechat:emoji 字体内解释）。
+ * 码点映射：codePoint = id + 0xE000（仅在 memechat:emoji 字体内解释）。
  */
 public class MemechatFontSet extends FontSet {
 
@@ -34,11 +34,11 @@ public class MemechatFontSet extends FontSet {
     }
 
     public static int codePointToId(int codePoint) {
-        return codePoint - 33;
+        return codePoint - 0xE000;
     }
 
     public static int idToCodePoint(int id) {
-        return id + 33;
+        return id + 0xE000;
     }
 
     @Override
