@@ -14,10 +14,12 @@ buildscript {
     }
     dependencies {
         classpath "net.fabricmc:fabric-loom:1.17.17"
+        classpath "org.spongepowered:mixin:0.8.5"
     }
 }
 
 apply plugin: 'net.fabricmc.fabric-loom-remap'
+apply plugin: 'mixin'
 apply plugin: 'java'
 
 // 1.21.x 版本 → fabric-api 版本映射（来自官方 fabric-docs reference / modrinth）
@@ -100,6 +102,12 @@ sourceSets {
         def vdir = file("src/${vcode}/java")
                 if (vdir.exists()) java.srcDirs += vdir
     }
+}
+
+
+mixin {
+    add sourceSets.client, "client-memechat-refmap.json"
+    config "memechat.mixins.json"
 }
 
 processResources {
