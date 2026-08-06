@@ -1,0 +1,7 @@
+.DS_Store
+build/
+.gradle/
+run/
+emogg/
+*.log
+hs_err*.log

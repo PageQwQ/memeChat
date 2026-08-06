@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "guilib",
+  "version": "${version}",
+  "name": "GuiLib",
+  "description": "Cross-version GUI API for Fabric mods.",
+  "authors": ["PageQwQ"],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["pageqwq.guilib.GuiLibClient"]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.9",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
