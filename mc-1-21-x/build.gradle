@@ -91,7 +91,7 @@ dependencies {
 // 共享纯 Java common 源码 + 字体形态目录 + 版本差异目录（仅挂当前版本对应目录）
 sourceSets {
     main {
-        java.srcDirs += file('../common/src/main/java')
+        java.srcDirs += file('../common')
     }
     client {
         java.srcDirs += file("src/client-shared/java")
