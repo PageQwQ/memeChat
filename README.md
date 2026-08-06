@@ -4,25 +4,11 @@ A Fabric chat-meme mod: replace `:name:` syntax in chat with images (PNG stills 
 
 ## Repository Layout
 
-| Repository | Description |
+| Branch | Contents |
 |---|---|
-| [PageQwQ/mcmcChat-core](https://github.com/PageQwQ/mcmcChat-core) | Core pure-Java shared layer (emoji registry, parsers, grouplist), no Minecraft dependency |
-| [PageQwQ/memeChat](https://github.com/PageQwQ/memeChat) (this repo) | The mod itself; `main` holds the overview and the test pack, **each supported version lives on its own branch** |
-
-Branches in this repository:
-
-| Branch | Version |
-|---|---|
-| `1.21.1` | 1.21.1 (legacy font) |
-| `1.21.2` – `1.21.11` | 1.21.2 – 1.21.11 (one branch per version) |
-| `26.1.2` / `26.2` | 26.1.2 / 26.2 |
-
-Clone a branch and build directly:
-
-```bash
-git clone -b 1.21.9 https://github.com/PageQwQ/memeChat.git
-cd memeChat && ./gradlew build
-```
+| `main` | **Core code** — the pure-Java shared layer (`common/`, no Minecraft dependency): emoji registry, `:name:` parser, `grouplist.txt` parser, GIF decoder. Buildable standalone (`./gradlew build`). Also holds the test resource pack (`test-pack/`). |
+| `1.21.x` | The mod for 1.21.1 – 1.21.11 (projects `mc-1-21-1/` and `mc-1-21-x/`) |
+| `26.x` | The mod for 26.1.2 / 26.2 (projects `mc-26-1-2/` and `mc-26-2-x/`) |
 
 ## Features
 
@@ -75,24 +61,26 @@ group2/ == "Group 2",
 
 ## Supported Versions
 
-| Version | Notes |
-|---|---|
-| 1.21.1 | Standalone project `mc-1-21-1/` |
-| 1.21.2 – 1.21.11 | Single project `mc-1-21-x/`; switch with `-Pmc_version=X` |
-| 26.1.2 / 26.2 | Standalone projects `mc-26-1-2/`, `mc-26-2-x/` |
+| Version | Branch | Project |
+|---|---|---|
+| 1.21.1 | `1.21.x` | `mc-1-21-1/` |
+| 1.21.2 – 1.21.11 | `1.21.x` | `mc-1-21-x/` (switch with `-Pmc_version=X`) |
+| 26.1.2 / 26.2 | `26.x` | `mc-26-1-2/` / `mc-26-2-x/` |
 
 ## Building
 
 ```bash
-# 1.21.x (1.21.2 – 1.21.11)
-cd mc-1-21-x
-./gradlew build -Pmc_version=1.21.9          # any version 1.21.2–1.21.11
-
-# 1.21.1
-cd mc-1-21-1
+# Core library (main branch)
 ./gradlew build
 
-# 26.x
+# 1.21.x branch
+git checkout 1.21.x
+cd mc-1-21-x
+./gradlew build -Pmc_version=1.21.9          # any version 1.21.2–1.21.11
+cd ../mc-1-21-1 && ./gradlew build            # 1.21.1
+
+# 26.x branch
+git checkout 26.x
 cd mc-26-1-2 && ./gradlew build
 cd mc-26-2-x && ./gradlew build
 ```
@@ -109,4 +97,8 @@ JAVA_HOME=<jdk25 path> ./gradlew runClient -Pmc_version=1.21.9
 
 ## Test Pack
 
-`test-pack/` contains a sample resource pack (beluga.png, animated.gif, group examples, grouplist.txt). Copy it into your game's `resourcepacks` folder and enable it. Note: resource pack folder and file paths may only contain lowercase letters, digits, `_`, `-`, and `.` — Chinese or special characters are ignored by Minecraft.
+`test-pack/` (on `main`) contains a sample resource pack (beluga.png, animated.gif, group examples, grouplist.txt). Copy it into your game's `resourcepacks` folder and enable it. Note: resource pack folder and file paths may only contain lowercase letters, digits, `_`, `-`, and `.` — Chinese or special characters are ignored by Minecraft.
+
+## License
+
+MIT

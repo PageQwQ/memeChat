@@ -1,0 +1,14 @@
+plugins {
+    id 'java-library'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+    withSourcesJar()
+}
+
+group = 'pageqwq.memechat'
+version = '0.1.0'
+
+sourceSets.main.java.srcDirs += file('common/src/main/java')
