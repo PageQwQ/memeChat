@@ -1,6 +1,7 @@
 package pageqwq.memechat;
 
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
 import net.minecraft.server.packs.resources.ResourceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +10,8 @@ import pageqwq.memechat.common.Emoji;
 import pageqwq.memechat.common.EmojiRegistry;
 
 import java.util.Comparator;
+import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -28,6 +31,7 @@ public final class MemechatEmojis {
                     && (loc.getPath().endsWith(".png") || loc.getPath().endsWith(".gif"));
 
     private final Map<Integer, MemechatEmoji> byId = new ConcurrentHashMap<>();
+    private final Map<String, String> packNames = new LinkedHashMap<>();
     private final EmojiRegistry registry = EmojiRegistry.getInstance();
 
     private MemechatEmojis() {}
@@ -40,11 +44,27 @@ public final class MemechatEmojis {
     public void reload(ResourceManager resourceManager) {
         registry.beginReload();
         byId.clear();
+        packNames.clear();
+
+        resourceManager.listPacks().forEach(pack -> {
+            String id = pack.packId();
+            String name = id;
+            try {
+                var meta = pack.getMetadataSection(PackMetadataSection.CLIENT_TYPE);
+                if (meta != null && !meta.description().getString().isBlank()) {
+                    name = meta.description().getString();
+                }
+            } catch (IOException ignored) {
+            }
+            packNames.put(id, name);
+        });
 
         resourceManager.listResources(MemechatConstants.MEMES_PATH, IS_MEME)
-                .keySet().stream()
-                .filter(loc -> loc.getNamespace().equals(MemechatConstants.NAMESPACE))
-                .forEach(this::register);
+                .forEach((loc, resource) -> {
+                    if (loc.getNamespace().equals(MemechatConstants.NAMESPACE)) {
+                        register(loc, resource.sourcePackId());
+                    }
+                });
 
         // CommandEncoder 纹理上传不能在渲染帧中途执行，必须在重载时（帧外）完成
         byId.values().forEach(MemechatEmoji::loadSynchronously);
@@ -52,12 +72,16 @@ public final class MemechatEmojis {
         LOGGER.info("[memechat] Discovered {} memes", registry.all().size());
     }
 
-    private void register(Identifier location) {
+    private void register(Identifier location, String pack) {
         boolean isGif = location.getPath().endsWith(".gif");
-        Emoji emoji = registry.register(location.getPath(), isGif);
+        Emoji emoji = registry.register(location.getPath(), isGif, pack);
         if (emoji != null) {
             byId.put(emoji.id(), new MemechatEmoji(emoji));
         }
+    }
+
+    public String displayName(String packId) {
+        return packNames.getOrDefault(packId, packId);
     }
 
     public MemechatEmoji byId(int id) {

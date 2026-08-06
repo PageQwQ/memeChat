@@ -56,8 +56,6 @@ dependencies {
     mappings loom.officialMojangMappings()
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-    // guilib cross-version GUI API (build guilib/mc-1-21-1 first)
-    modImplementation files('../guilib/mc-1-21-1/build/libs/guilib-1.21.1-0.1.0.jar')
 }
 
 // 共享纯 Java common 源码

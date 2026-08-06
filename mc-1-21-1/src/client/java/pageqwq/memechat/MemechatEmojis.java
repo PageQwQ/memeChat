@@ -1,7 +1,11 @@
 package pageqwq.memechat;
 
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
 import net.minecraft.server.packs.resources.ResourceManager;
+
+import java.io.IOException;
+import java.util.LinkedHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,6 +33,7 @@ public final class MemechatEmojis {
                     && (loc.getPath().endsWith(".png") || loc.getPath().endsWith(".gif"));
 
     private final Map<Integer, MemechatEmoji> byId = new ConcurrentHashMap<>();
+    private final Map<String, String> packNames = new LinkedHashMap<>();
     private final EmojiRegistry registry = EmojiRegistry.getInstance();
 
     private MemechatEmojis() {}
@@ -42,6 +47,20 @@ public final class MemechatEmojis {
         registry.beginReload();
         byId.clear();
         EmojiAtlas.clear();
+        packNames.clear();
+
+        resourceManager.listPacks().forEach(pack -> {
+            String id = pack.packId();
+            String name = id;
+            try {
+                var meta = pack.getMetadataSection(PackMetadataSection.TYPE);
+                if (meta != null && !meta.description().getString().isBlank()) {
+                    name = meta.description().getString();
+                }
+            } catch (IOException ignored) {
+            }
+            packNames.put(id, name);
+        });
 
         resourceManager.listResources(MemechatConstants.MEMES_PATH, IS_MEME)
                 .forEach((loc, resource) -> {
@@ -59,6 +78,10 @@ public final class MemechatEmojis {
         if (emoji != null) {
             byId.put(emoji.id(), new MemechatEmoji(emoji));
         }
+    }
+
+    public String displayName(String packId) {
+        return packNames.getOrDefault(packId, packId);
     }
 
     public MemechatEmoji byId(int id) {

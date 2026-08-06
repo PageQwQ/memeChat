@@ -94,6 +94,7 @@ sourceSets {
         java.srcDirs += file('../common/src/main/java')
     }
     client {
+        java.srcDirs += file("src/client-shared/java")
         java.srcDirs += file("src/${fontForm}/java")
         resources.srcDirs += file("src/${fontForm}/resources")
         def vdir = file("src/${vcode}/java")

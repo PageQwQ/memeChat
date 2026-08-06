@@ -21,7 +21,7 @@ public class MemeButton extends Button {
         if (isHovered()) {
             graphics.fill(getX(), getY(), getX() + getWidth(), getY() + getHeight(), 0x44ffffff);
         }
-        int iconSize = 8;
+        int iconSize = 14;
         int offset = (getWidth() - iconSize) / 2;
         graphics.blit(ICON, getX() + offset, getY() + offset, 0f, 0f, iconSize, iconSize, iconSize, iconSize);
     }
