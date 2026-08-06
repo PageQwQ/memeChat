@@ -20,7 +20,8 @@ public abstract class StringRenderOutputMixin {
 
     @Inject(method = "accept", at = @At("HEAD"), cancellable = true)
     private void memechat$noShadowAndGlowOutlineForEmojis(int i, Style style, int j, CallbackInfoReturnable<Boolean> cir) {
-        if (this.dropShadow || MixinHelpers.shouldSkipEmojiGlyphRender) {
+        // 1.21.1 的 accept 是单 pass（阴影在 renderChar 内部处理），dropShadow=true 时跳过会连主体一起消失
+        if (MixinHelpers.shouldSkipEmojiGlyphRender) {
             if (style.getFont().equals(MemechatFontSet.NAME)) {
                 this.x += MemechatFontSet.getInstance()
                         .getGlyphInfo(i, false)

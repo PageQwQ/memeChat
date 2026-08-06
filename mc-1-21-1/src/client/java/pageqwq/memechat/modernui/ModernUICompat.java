@@ -8,6 +8,8 @@ import net.minecraft.util.FormattedCharSequence;
 import org.joml.Matrix4f;
 
 import java.lang.reflect.Method;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import pageqwq.memechat.MemechatConstants;
 
@@ -16,6 +18,8 @@ import pageqwq.memechat.MemechatConstants;
  * 含 memeChat 表情样式的文本由调用方（FontMixin）改用 vanilla 渲染。
  */
 public final class ModernUICompat {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger("memechat");
 
     private static final String ENGINE = "icyllis.modernui.mc.text.TextLayoutEngine";
     private static final String RENDERER = "icyllis.modernui.mc.text.ModernTextRenderer";
@@ -40,13 +44,13 @@ public final class ModernUICompat {
                             FormattedCharSequence.class, float.class, float.class, int.class, boolean.class,
                             Matrix4f.class, MultiBufferSource.class, Font.DisplayMode.class, int.class, int.class);
                     loaded = true;
-                    System.out.println("[memechat] ModernUI compat active");
+                    LOGGER.info("[memechat] ModernUI compat active");
                 } catch (Exception e) {
                     loaded = false;
-                    System.out.println("[memechat] ModernUI compat init failed: " + e);
+                    LOGGER.warn("[memechat] ModernUI compat init failed: {}", e.toString());
                 }
             } else {
-                System.out.println("[memechat] ModernUI not loaded, compat disabled");
+                LOGGER.info("[memechat] ModernUI not loaded, compat disabled");
             }
         }
         return loaded;
