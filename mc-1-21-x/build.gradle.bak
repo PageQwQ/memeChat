@@ -1,5 +1,0 @@
-task printSrcDirs {
-    doLast {
-        sourceSets.client.java.srcDirs.each { println "SRC: $it (exists=${it.exists()})" }
-    }
-}
