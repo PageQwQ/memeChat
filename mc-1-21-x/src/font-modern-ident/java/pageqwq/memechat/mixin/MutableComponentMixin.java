@@ -1,0 +1,32 @@
+package pageqwq.memechat.mixin;
+
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentContents;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
+import net.minecraft.util.FormattedCharSequence;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.List;
+
+import pageqwq.memechat.EmojiParser;
+
+/** 组件构造与渲染准备时触发表情包解析（仅渲染线程/客户端） */
+@Mixin(MutableComponent.class)
+public abstract class MutableComponentMixin {
+    @Inject(method = "<init>", at = @At("TAIL"))
+    private void memechat$init(ComponentContents componentContents, List<Component> list, Style style, CallbackInfo ci) {
+        if (!EmojiParser.isOnLogicalClient()) return;
+        EmojiParser.parse((MutableComponent) (Object) this);
+    }
+
+    @Inject(method = "getVisualOrderText", at = @At("HEAD"))
+    private void memechat$getVisualOrderText(CallbackInfoReturnable<FormattedCharSequence> cir) {
+        if (!EmojiParser.isOnLogicalClient()) return;
+        EmojiParser.parse((MutableComponent) (Object) this);
+    }
+}

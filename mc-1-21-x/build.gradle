@@ -1,0 +1,117 @@
+buildscript {
+    repositories {
+        maven { url = 'https://maven.aliyun.com/repository/gradle-plugin' }
+        maven { url = 'https://maven.aliyun.com/repository/public' }
+        maven {
+            name = 'Fabric'
+            url = 'https://maven.fabricmc.net/'
+        }
+        maven {
+            name = 'Gradle Plugin Portal'
+            url = 'https://plugins.gradle.org/m2/'
+        }
+        gradlePluginPortal()
+    }
+    dependencies {
+        classpath "net.fabricmc:fabric-loom:1.17.17"
+    }
+}
+
+apply plugin: 'net.fabricmc.fabric-loom-remap'
+apply plugin: 'java'
+
+// 1.21.x 版本 → fabric-api 版本映射（来自官方 fabric-docs reference / modrinth）
+def fabricApiVersions = [
+    '1.21.1':  '0.116.7+1.21.1',
+    '1.21.2':  '0.106.1+1.21.2',
+    '1.21.3':  '0.114.1+1.21.3',
+    '1.21.4':  '0.116.1+1.21.4',
+    '1.21.5':  '0.128.2+1.21.5',
+    '1.21.6':  '0.128.2+1.21.6',
+    '1.21.7':  '0.129.0+1.21.7',
+    '1.21.8':  '0.134.0+1.21.8',
+    '1.21.9':  '0.134.1+1.21.9',
+    '1.21.10': '0.137.0+1.21.10',
+    '1.21.11': '0.141.1+1.21.11',
+]
+
+def mcVersion = project.property('mc_version')
+def fabricApiVersion = fabricApiVersions[mcVersion]
+if (fabricApiVersion == null) throw new GradleException("未知版本: ${mcVersion}，支持: ${fabricApiVersions.keySet().join(', ')}")
+
+// 字体系统形态：1.21.2~1.21.5 旧式、1.21.6~1.21.9 过渡式、1.21.10 modern+RL、1.21.11 modern+Identifier
+def fontForms = [
+    '1.21.2': 'font-legacy', '1.21.3': 'font-legacy', '1.21.4': 'font-legacy',
+    '1.21.5': 'font-legacy-1215',
+    '1.21.6': 'font-transition', '1.21.7': 'font-transition', '1.21.8': 'font-transition',
+    '1.21.9': 'font-modern-rl', '1.21.10': 'font-modern-rl', '1.21.11': 'font-modern-ident',
+]
+def fontForm = fontForms[mcVersion]
+if (fontForm == null) throw new GradleException("未知版本: ${mcVersion}，支持: ${fontForms.keySet().join(', ')}")
+def vcode = 'v' + mcVersion.replace('.', '')
+
+version = "${mcVersion}-${mod_version}-fabric"
+group = project.maven_group
+base.archivesName = project.archives_base_name
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+    withSourcesJar()
+}
+
+loom {
+    splitEnvironmentSourceSets()
+
+    mods {
+        memechat {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.client
+        }
+    }
+}
+
+repositories {
+    maven { url = 'https://maven.aliyun.com/repository/public' }
+    maven { url = 'https://maven.aliyun.com/repository/central' }
+    mavenCentral()
+    maven {
+        name = 'Fabric'
+        url = 'https://maven.fabricmc.net/'
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${mcVersion}"
+    mappings loom.officialMojangMappings()
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabricApiVersion}"
+}
+
+// 共享纯 Java common 源码 + 字体形态目录 + 版本差异目录（仅挂当前版本对应目录）
+sourceSets {
+    main {
+        java.srcDirs += file('../common/src/main/java')
+    }
+    client {
+        java.srcDirs += file("src/client-shared/java")
+        java.srcDirs += file("src/${fontForm}/java")
+        resources.srcDirs += file("src/${fontForm}/resources")
+        def vdir = file("src/${vcode}/java")
+                if (vdir.exists()) java.srcDirs += vdir
+    }
+}
+
+processResources {
+    def version = project.version
+    inputs.property "version", version
+    inputs.property "mcVersion", mcVersion
+    filesMatching("fabric.mod.json") {
+        expand "version": version, "mcVersion": mcVersion
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = 21
+    it.options.encoding = 'UTF-8'
+}
