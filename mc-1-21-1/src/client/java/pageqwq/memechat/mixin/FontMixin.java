@@ -57,6 +57,7 @@ public abstract class FontMixin {
                                               Matrix4f matrix, MultiBufferSource source, Font.DisplayMode displayMode,
                                               int colorBackground, int packedLight, CallbackInfoReturnable<Integer> cir) {
         if (!ModernUICompat.isActive()) return;
+        System.out.println("[memechat] drawInBatch(Component) intercepted");
         try {
             float drawn = ModernUICompat.draw(text.getVisualOrderText(), x, y, color, dropShadow, matrix, source,
                     displayMode, colorBackground, packedLight);

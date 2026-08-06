@@ -19,5 +19,6 @@
   "injectors": {
     "defaultRequire": 1
   },
-  "refmap": "client-memechat-refmap.json"
+  "refmap": "client-memechat-refmap.json",
+  "priority": 100
 }

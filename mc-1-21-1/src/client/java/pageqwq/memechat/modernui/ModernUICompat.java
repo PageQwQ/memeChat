@@ -44,9 +44,13 @@ public final class ModernUICompat {
                             FormattedCharSequence.class, float.class, float.class, int.class, boolean.class,
                             Matrix4f.class, MultiBufferSource.class, Font.DisplayMode.class, int.class, int.class);
                     loaded = true;
-                } catch (Exception ignored) {
+                    System.out.println("[memechat] ModernUI compat active");
+                } catch (Exception e) {
                     loaded = false;
+                    System.out.println("[memechat] ModernUI compat init failed: " + e);
                 }
+            } else {
+                System.out.println("[memechat] ModernUI not loaded, compat disabled");
             }
         }
         return loaded;
@@ -59,8 +63,10 @@ public final class ModernUICompat {
         RENDERING.set(true);
         try {
             Object renderer = getRendererMethod.invoke(engineInstance);
-            return (float) drawTextMethod.invoke(renderer, text, x, y, color, dropShadow, matrix, source,
+            float result = (float) drawTextMethod.invoke(renderer, text, x, y, color, dropShadow, matrix, source,
                     displayMode, colorBackground, packedLight);
+            System.out.println("[memechat] ModernUI draw succeeded");
+            return result;
         } catch (java.lang.reflect.InvocationTargetException e) {
             Throwable cause = e.getCause();
             if (cause instanceof MemechatFontException) {
