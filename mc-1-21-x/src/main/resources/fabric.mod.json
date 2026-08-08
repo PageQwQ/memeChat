@@ -6,6 +6,7 @@
   "description": "Add meme images to your chat and more! Type :meme_name: to show memes.",
   "authors": ["PageQwQ"],
   "license": "MIT",
+  "icon": "assets/memechat/icon.png",
   "environment": "client",
   "entrypoints": {
     "client": ["pageqwq.memechat.MemechatClient"]
