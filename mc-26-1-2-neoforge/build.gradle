@@ -1,0 +1,81 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.gradle.userdev' version '7.1.38'
+}
+
+version = "${target_mc_version}-${mod_version}-neoforge"
+group = mod_group_id
+
+base { archivesName = mod_id }
+
+// 26.1 drop 发行版随 Java 25（mappings 对齐 Mojang 官方映射）
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+
+// NeoGradle userdev 使用 joined MC jar（客户端类对 main sourceSet 可见），
+// 因此把 Fabric 的 main+client 拆分合并为单一 main sourceSet。
+// 共享 ../common 纯 Java 源（与 Fabric 子项目同构）。
+sourceSets {
+    main {
+        java.srcDir '../common'
+    }
+}
+
+repositories {
+    maven { url = 'https://maven.aliyun.com/repository/public' }
+    maven { url = 'https://maven.aliyun.com/repository/central' }
+    mavenCentral()
+}
+
+configurations {
+    runtimeClasspath.extendsFrom localRuntime
+}
+
+dependencies {
+    // NeoForge userdev 依赖（内嵌 MC + Mojang 映射）
+    implementation "net.neoforged:neoforge:${neo_version}"
+}
+
+tasks.named('wrapper', Wrapper).configure {
+    distributionType = Wrapper.DistributionType.BIN
+}
+
+runs {
+    configureEach {
+        systemProperty 'forge.logging.markers', 'REGISTRIES'
+        systemProperty 'forge.logging.console.level', 'debug'
+        workingDirectory project.layout.projectDirectory.dir('run').dir(name)
+        modSource project.sourceSets.main
+    }
+    client {
+        systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+    }
+}
+
+tasks.withType(ProcessResources).configureEach {
+    var replaceProperties = [
+            minecraft_version      : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            target_mc_version      : target_mc_version,
+            neo_version            : neo_version,
+            neo_version_range      : neo_version_range,
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_license            : mod_license,
+            mod_version            : mod_version,
+    ]
+    inputs.properties replaceProperties
+    filesMatching(['META-INF/neoforge.mods.toml']) {
+        expand replaceProperties
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
+    }
+}

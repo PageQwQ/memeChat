@@ -1,0 +1,38 @@
+modLoader="javafml"
+loaderVersion="[1,)"
+license="${mod_license}"
+
+[[mods]]
+modId="${mod_id}"
+version="${file.jarVersion}"
+displayName="${mod_name}"
+authors="PageQwQ"
+description='''
+Add meme images to your chat and more! Type :meme_name: to show memes. Renders
+PNG stills and animated GIFs wherever text renders; includes a meme picker
+panel, chat completion, and multi-resource-pack support.
+'''
+
+# -- Mixin 配置：vanilla 目标 mixin 始终应用 --
+[[mixins]]
+config="memechat.mixins.json"
+
+# -- ModernUI 兼容 mixin：仅当 modernui 已加载时应用 --
+[[mixins]]
+config="memechat.modernui.mixins.json"
+requiredMods=["modernui"]
+
+# -- 依赖 --
+[[dependencies.memechat]]
+modId="neoforge"
+type="required"
+versionRange="${neo_version_range}"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.memechat]]
+modId="minecraft"
+type="required"
+versionRange="${minecraft_version_range}"
+ordering="NONE"
+side="BOTH"

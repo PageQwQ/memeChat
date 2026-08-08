@@ -1,0 +1,19 @@
+{
+  "required": true,
+  "package": "pageqwq.memechat.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "priority": 100,
+  "client": [
+    "FontManagerMixin",
+    "MutableComponentMixin",
+    "MutableComponentAccessor",
+    "ComponentMixin",
+    "CommandSuggestionsMixin",
+    "ChatScreenMixin",
+    "ScreenAccessor",
+    "SuggestionsListMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
