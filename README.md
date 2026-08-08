@@ -1,6 +1,12 @@
+<div align="center"><center>
+
 # memeChat
 
-A Fabric chat-meme mod: replace `:name:` syntax in chat with images (PNG stills / GIF animations) anywhere text renders. Includes chat completion, a meme picker panel, and multi-resource-pack support.
+A chat-meme mod: replace `:name:` syntax in chat with images (PNG stills / GIF animations) anywhere text renders. Includes chat completion, a meme picker panel, and multi-resource-pack support.
+
+![Preview](/images/Preview.png)
+
+</center></div>
 
 ## Repository Layout
 
@@ -98,7 +104,3 @@ JAVA_HOME=<jdk25 path> ./gradlew runClient -Pmc_version=1.21.9
 ## Test Pack
 
 `test-pack/` (on `main`) contains a sample resource pack (beluga.png, animated.gif, group examples, grouplist.txt). Copy it into your game's `resourcepacks` folder and enable it. Note: resource pack folder and file paths may only contain lowercase letters, digits, `_`, `-`, and `.` — Chinese or special characters are ignored by Minecraft.
-
-## License
-
-MIT
