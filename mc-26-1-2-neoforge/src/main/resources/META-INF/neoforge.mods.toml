@@ -7,6 +7,7 @@ modId="${mod_id}"
 version="${file.jarVersion}"
 displayName="${mod_name}"
 authors="PageQwQ"
+logoFile="assets/memechat/icon.png"
 description='''
 Add meme images to your chat and more! Type :meme_name: to show memes. Renders
 PNG stills and animated GIFs wherever text renders; includes a meme picker
